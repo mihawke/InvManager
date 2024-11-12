@@ -50,6 +50,63 @@ const itemsController = {
             console.log(err.message)
         }
     },
+    createItem: async (req, res) => {
+        const { name, category, price, quantity } = req.body;
+        try {
+            const existingItem = await Item.findOne({ name })
+            if (existingItem) {
+                return res.status(409).json({ message: "Item with same name already exist" });
+            }
+            const newItem = new Item({ name: name, category: category, price: price, quantity: quantity })
+            newItem.save();
+            res.status(201).json({
+                message: 'Item created successfully',
+                newItem
+            });
+        } catch (error) {
+            console.log(error.message)
+        }
+    },
+    deleteItem: async (req, res) => {
+        const { itemId } = req.params;
+        try {
+            const existingItem = Item.findOne({ _id: itemId })
+            if (existingItem) {
+                await Item.deleteOne({ _id: itemId })
+                res.status(200).json({
+                    message: 'Item deleted successfully!'
+                })
+            }
+            else {
+                return res.status(404).json({
+                    message: 'No item found'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    },
+    getItemById: async (req, res) => {
+        const { itemId } = req.params;
+        try {
+            const retrievedItem = await Item.findOne({ _id: itemId })
+            res.json(retrievedItem)
+        } catch (error) {
+            console.log(error)
+        }
+    },
+    updateItem: async (req, res) => {
+        const { itemId } = req.params;
+        const { name, category, price, quantity } = req.body;
+        try {
+            await Item.updateOne({ "_id": itemId }, { $set: { name, category, price, quantity } })
+            res.status(200).json({
+                message: 'Item updated successfully!'
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    },
 }
 
 module.exports = itemsController;
